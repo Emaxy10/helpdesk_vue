@@ -47,7 +47,7 @@
 
       <!-- User -->
       <v-select
-        v-model="ticket.user_id"
+        v-model="ticket.assign_to"
         :items="users"
         item-title="name"
         item-value="id"
@@ -74,7 +74,8 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { ref, onMounted } from "vue"
+import api from "@/plugins/axios"
 
 const valid = ref(false)
 
@@ -83,17 +84,28 @@ const ticket = ref({
   description: "",
   status: "open",   // 👈 default to open
   priority: null,
-  user_id: null,
+  assign_to: null,
 })
 
 // Static options (mock data)
 const statuses = ["open", "in-progress", "resolved", "closed"]
 const priorities = ["low", "medium", "high"]
-const users = [
-  { id: 1, name: "Emmanuel Iroawula" },
-  { id: 2, name: "Grace Johnson" },
-  { id: 3, name: "John Doe" },
-]
+const users = ref([])
+
+async function getAgent(){
+
+    try{
+        const response = await api.get('/agent');
+        console.log(response.data)
+
+        users.value = response.data
+    }catch(error){
+        console.error(error)
+    }
+    
+}
+
+onMounted( getAgent)
 
 // Validation rules
 const rules = {
@@ -115,7 +127,7 @@ const resetForm = () => {
     description: "",
     status: "open",   // 👈 reset to open again
     priority: null,
-    user_id: null,
+    assign_to: null,
   }
 }
 </script>
