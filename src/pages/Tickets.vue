@@ -21,31 +21,88 @@
       </template>
 
       <!-- Actions -->
-      <template v-slot:item.actions="{ item }">
-        <v-btn icon size="small" color="primary" @click="editTicket(item)">
-          <v-icon>mdi-pencil</v-icon>
-        </v-btn>
-        <v-btn icon size="small" color="info" @click="viewTicket(item)">
-          <v-icon>mdi-information</v-icon>
-        </v-btn>
-        <v-btn icon size="small" color="warning" @click="transferTicket(item)">
-          <v-icon>mdi-share</v-icon>
-        </v-btn>
-        <v-btn icon size="small" color="success" @click="acceptTicket(item)">
-          <v-icon>mdi-check</v-icon>
-        </v-btn>
-        <v-btn icon size="small" color="error" @click="rejectTicket(item)">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-        <v-btn
-          icon
-          size="small"
-          color="red-darken-2"
-          @click="confirmDelete(item)"
-        >
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
-      </template>
+    <template v-slot:item.actions="{ item }">
+        <!-- Edit -->
+        <v-tooltip text="Edit">
+            <template #activator="{ props }">
+            <v-btn
+                v-bind="props"
+                icon
+                variant="text"
+                color="primary"
+                size="small"
+                @click="editTicket(item)"
+            >
+                <v-icon>mdi-pencil</v-icon>
+            </v-btn>
+            </template>
+        </v-tooltip>
+
+        <!-- Info -->
+        <v-tooltip text="View Details">
+            <template #activator="{ props }">
+            <v-btn
+                v-bind="props"
+                icon
+                variant="text"
+                color="info"
+                size="small"
+                @click="viewTicket(item)"
+            >
+                <v-icon>mdi-information</v-icon>
+            </v-btn>
+            </template>
+        </v-tooltip>
+
+        <!-- Transfer -->
+        <v-tooltip text="Transfer">
+            <template #activator="{ props }">
+            <v-btn
+                v-bind="props"
+                icon
+                variant="text"
+                color="warning"
+                size="small"
+                @click="transferTicket(item)"
+            >
+                <v-icon>mdi-share</v-icon>
+            </v-btn>
+    </template>
+  </v-tooltip>
+
+  <!-- Accept -->
+  <v-tooltip text="Accept">
+    <template #activator="{ props }">
+      <v-btn
+        v-bind="props"
+        icon
+        variant="text"
+        color="success"
+        size="small"
+        @click="acceptTicket(item)"
+      >
+        <v-icon>mdi-check</v-icon>
+      </v-btn>
+    </template>
+  </v-tooltip>
+
+  <!-- Delete -->
+  <v-tooltip text="Delete">
+    <template #activator="{ props }">
+      <v-btn
+        v-bind="props"
+        icon
+        variant="text"
+        color="red-darken-2"
+        size="small"
+        @click="confirmDelete(item)"
+      >
+        <v-icon>mdi-delete</v-icon>
+      </v-btn>
+    </template>
+  </v-tooltip>
+</template>
+
     </v-data-table>
 
     <!-- Ticket Info Dialog -->
@@ -140,7 +197,7 @@ import api from '@/plugins/axios'
 
 const headers = [
   { title: '#', key: 'sn', sortable: false },
-  { title: 'ID', key: 'id' },
+//   { title: 'ID', key: 'id' },
   { title: 'Title', key: 'title' },
   { title: 'Description', key: 'description' },
   { title: 'Status', key: 'status' },
