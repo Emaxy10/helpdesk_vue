@@ -84,6 +84,9 @@ import { useVuelidate } from '@vuelidate/core'
 import { email, required } from '@vuelidate/validators'
 import api from '@/plugins/axios'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
 
 const state = reactive({
   email: '',
@@ -106,20 +109,14 @@ const v$ = useVuelidate(rules, state)
 // login function
 async function loginUser() {
   const success = await v$.value.$validate()
+  if (!success) return
 
-  if (success) {
-    try {
-      // Sanctum csrf cookie if needed
-      await api.get('/sanctum/csrf-cookie')
-
-      const response = await api.post('/login', state)
-      console.log('Login success:', response.data)
-      router.push('/dashboard')
-
-      // redirect or store token here
-    } catch (error) {
-      console.error('Login error:', error.response?.data || error.message)
-    }
+  try {
+    await authStore.login(state)  // use Pinia action
+    router.push('/dashboard')
+  } catch (error) {
+    console.error('Login error:', error.response?.data || error.message)
   }
 }
+
 </script>

@@ -1,4 +1,24 @@
 <template>
+  <!-- Snackbar for success -->
+  <v-snackbar
+    v-model="success"
+    color="green"
+    timeout="3000"
+    location="bottom right"
+    elevation="6"
+  >
+    🎉 Ticket created successfully!
+    <template v-slot:action="{ attrs }">
+      <v-btn
+        text
+        v-bind="attrs"
+        @click="success = false"
+      >
+        Close
+      </v-btn>
+    </template>
+  </v-snackbar>
+
   <v-card class="mx-auto pa-6" max-width="600" elevation="6" rounded="xl">
     <v-card-title class="text-h5 font-weight-bold mb-4">
       🎫 Create New Ticket
@@ -26,7 +46,7 @@
         clearable
       />
 
-      <!-- Status (disabled, default Open) -->
+      <!-- Status -->
       <v-select
         v-model="ticket.status"
         :items="statuses"
@@ -47,7 +67,7 @@
 
       <!-- User -->
       <v-select
-        v-model="ticket.assign_to"
+        v-model="ticket.assigned_to"
         :items="users"
         item-title="name"
         item-value="id"
@@ -78,46 +98,50 @@ import { ref, onMounted } from "vue"
 import api from "@/plugins/axios"
 
 const valid = ref(false)
+const success = ref(false)
 
 const ticket = ref({
   title: "",
   description: "",
-  status: "open",   // 👈 default to open
+  status: "open",
   priority: null,
-  assign_to: null,
+  assigned_to: null,
 })
 
-// Static options (mock data)
 const statuses = ["open", "in-progress", "resolved", "closed"]
 const priorities = ["low", "medium", "high"]
 const users = ref([])
 
-async function getAgent(){
-
-    try{
-        const response = await api.get('/agent');
-        console.log(response.data)
-
-        users.value = response.data
-    }catch(error){
-        console.error(error)
-    }
-    
+async function getAgent() {
+  try {
+    const response = await api.get("/agent")
+    users.value = response.data
+  } catch (error) {
+    console.error(error)
+  }
 }
 
-onMounted( getAgent)
+onMounted(getAgent)
 
-// Validation rules
 const rules = {
   required: (v) => !!v || "This field is required",
-  max255: (v) =>
-    !v || v.length <= 255 || "Must be less than 255 characters",
+  max255: (v) => !v || v.length <= 255 || "Must be less than 255 characters",
 }
 
-const submitForm = () => {
+const submitForm = async () => {
   if (valid.value) {
-    console.log("Submitting ticket:", ticket.value)
-    // 🚀 Replace with your API call
+    try {
+      const response = await api.post("/ticket/create", ticket.value)
+      console.log("Submitting ticket:", response.data)
+
+      // Show snackbar
+      success.value = true
+
+      // Reset the form
+      resetForm()
+    } catch (error) {
+      console.error(error)
+    }
   }
 }
 
@@ -125,9 +149,9 @@ const resetForm = () => {
   ticket.value = {
     title: "",
     description: "",
-    status: "open",   // 👈 reset to open again
+    status: "open",
     priority: null,
-    assign_to: null,
+    assigned_to: null,
   }
 }
 </script>
