@@ -86,6 +86,25 @@
     </template>
   </v-tooltip>
 
+
+<!-- Close -->
+  <v-tooltip text="Close">
+    <template #activator="{ props }">
+      <v-btn
+        v-bind="props"
+        icon
+        variant="text"
+        color="grey-darken-1"
+        size="small"
+        @click="closeTicket(item)"
+      >
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+    </template>
+  </v-tooltip>
+
+
+
   <!-- Delete -->
   <v-tooltip text="Delete">
     <template #activator="{ props }">
@@ -235,7 +254,7 @@ const viewTicket = (item) => {
 }
 const transferTicket = (item) => console.log('Transfer', item)
 const acceptTicket = (item) => console.log('Accept', item)
-const rejectTicket = (item) => console.log('Reject', item)
+const closeTicket = (item) => console.log('Close', item)
 
 const confirmDelete = (item) => {
   ticketToDelete.value = item
