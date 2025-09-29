@@ -96,9 +96,11 @@
 <script setup>
 import { ref, onMounted } from "vue"
 import api from "@/plugins/axios"
+import { useRouter } from "vue-router"
 
 const valid = ref(false)
 const success = ref(false)
+const router = useRouter()
 
 const ticket = ref({
   title: "",
@@ -137,21 +139,23 @@ const submitForm = async () => {
       // Show snackbar
       success.value = true
 
+      router.push('/tickets')
+
       // Reset the form
-      resetForm()
+      // resetForm()
     } catch (error) {
       console.error(error)
     }
   }
 }
 
-const resetForm = () => {
-  ticket.value = {
-    title: "",
-    description: "",
-    status: "open",
-    priority: null,
-    assigned_to: null,
-  }
-}
+// const resetForm = () => {
+//   ticket.value = {
+//     title: "",
+//     description: "",
+//     status: "open",
+//     priority: null,
+//     assigned_to: null,
+//   }
+// }
 </script>

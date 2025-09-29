@@ -10,6 +10,17 @@
       class="elevation-1"
       item-value="id"
     >
+      <!-- Dynamic numbering -->
+      <template v-slot:item.sn="{ index }">
+        {{ index + 1 }}
+      </template>
+
+      <!-- Created By -->
+      <template v-slot:item.user="{ item }">
+        {{ item.creator?.name || 'N/A' }}
+      </template>
+
+      <!-- Actions -->
       <template v-slot:item.actions="{ item }">
         <v-btn icon size="small" color="primary" @click="editTicket(item)">
           <v-icon>mdi-pencil</v-icon>
@@ -26,18 +37,109 @@
         <v-btn icon size="small" color="error" @click="rejectTicket(item)">
           <v-icon>mdi-close</v-icon>
         </v-btn>
-        <v-btn icon size="small" color="red-darken-2" @click="deleteTicket(item)">
+        <v-btn
+          icon
+          size="small"
+          color="red-darken-2"
+          @click="confirmDelete(item)"
+        >
           <v-icon>mdi-delete</v-icon>
         </v-btn>
       </template>
     </v-data-table>
+
+    <!-- Ticket Info Dialog -->
+    <v-dialog v-model="dialog" max-width="500">
+      <v-card class="rounded-lg elevation-8">
+        <v-card-title class="text-h6 font-weight-bold">
+          Ticket Details
+        </v-card-title>
+
+        <v-divider></v-divider>
+
+        <v-card-text v-if="selectedTicket" class="pt-4">
+          <!-- Title -->
+          <div class="mb-3">
+            <span class="font-weight-bold">Title:</span>
+            <span>{{ selectedTicket.title || 'N/A' }}</span>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-3">
+            <span class="font-weight-bold">Description:</span>
+            <span>{{ selectedTicket.description || 'N/A' }}</span>
+          </div>
+
+          <!-- Status -->
+          <div class="mb-3">
+            <span class="font-weight-bold">Status:</span>
+            <v-chip
+              :color="getStatusColor(selectedTicket.status)"
+              dark
+              small
+              class="ml-2"
+            >
+              {{ selectedTicket.status || 'N/A' }}
+            </v-chip>
+          </div>
+
+          <!-- Priority -->
+          <div class="mb-3">
+            <span class="font-weight-bold">Priority:</span>
+            <v-chip
+              :color="getPriorityColor(selectedTicket.priority)"
+              dark
+              small
+              class="ml-2"
+            >
+              {{ selectedTicket.priority || 'N/A' }}
+            </v-chip>
+          </div>
+
+          <!-- Created By -->
+          <div class="mb-3">
+            <span class="font-weight-bold">Created By:</span>
+            <span>{{ selectedTicket.agent?.name || 'N/A' }}</span>
+          </div>
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text color="primary" @click="dialog = false">
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Confirm Delete Dialog -->
+    <v-dialog v-model="deleteDialog" max-width="400">
+      <v-card>
+        <v-card-title class="text-h6 font-weight-bold">
+          Confirm Delete
+        </v-card-title>
+        <v-card-text>
+          Are you sure you want to delete
+          <strong>{{ ticketToDelete?.title }}</strong>?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="deleteDialog = false">Cancel</v-btn>
+          <v-btn color="red" text @click="deleteTicket">Delete</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import api from '@/plugins/axios'
 
 const headers = [
+  { title: '#', key: 'sn', sortable: false },
   { title: 'ID', key: 'id' },
   { title: 'Title', key: 'title' },
   { title: 'Description', key: 'description' },
@@ -47,18 +149,78 @@ const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-const tickets = ref([
-  { id: 1, title: 'Login Issue', description: 'Unable to login', status: 'open', priority: 'high', user: 'John Doe' },
-  { id: 2, title: 'Email not syncing', description: 'Outlook sync problem', status: 'in-progress', priority: 'medium', user: 'Jane Smith' },
-  { id: 3, title: 'System crash', description: 'Blue screen error', status: 'resolved', priority: 'high', user: 'Michael Lee' },
-  { id: 4, title: 'Printer issue', description: 'Not printing', status: 'open', priority: 'low', user: 'David Brown' },
-])
+const tickets = ref([])
+const dialog = ref(false)
+const selectedTicket = ref(null)
 
-// Action handlers (currently just log to console)
+// Delete dialog state
+const deleteDialog = ref(false)
+const ticketToDelete = ref(null)
+
+const getTickets = async () => {
+  try {
+    const response = await api.get('/ticket')
+    tickets.value = response.data
+    console.log(tickets.value)
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+onMounted(getTickets)
+
+// Action handlers
 const editTicket = (item) => console.log('Edit', item)
-const viewTicket = (item) => console.log('Info', item)
+
+const viewTicket = (item) => {
+  selectedTicket.value = item
+  dialog.value = true
+}
 const transferTicket = (item) => console.log('Transfer', item)
 const acceptTicket = (item) => console.log('Accept', item)
 const rejectTicket = (item) => console.log('Reject', item)
-const deleteTicket = (item) => console.log('Delete', item)
+
+const confirmDelete = (item) => {
+  ticketToDelete.value = item
+  deleteDialog.value = true
+}
+
+const deleteTicket = async () => {
+  try {
+    await api.delete(`/ticket/${ticketToDelete.value.id}`)
+    tickets.value = tickets.value.filter((t) => t.id !== ticketToDelete.value.id)
+    deleteDialog.value = false
+    console.log(`Ticket ${ticketToDelete.value.id} deleted`)
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const getStatusColor = (status) => {
+  switch (status?.toLowerCase()) {
+    case 'open':
+      return 'blue'
+    case 'in progress':
+      return 'orange'
+    case 'closed':
+      return 'green'
+    case 'rejected':
+      return 'red'
+    default:
+      return 'grey'
+  }
+}
+
+const getPriorityColor = (priority) => {
+  switch (priority?.toLowerCase()) {
+    case 'low':
+      return 'green'
+    case 'medium':
+      return 'orange'
+    case 'high':
+      return 'red'
+    default:
+      return 'grey'
+  }
+}
 </script>
