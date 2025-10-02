@@ -207,6 +207,56 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+     <!-- Accept Ticket Dialog -->
+    <v-dialog v-model="acceptDialog" max-width="500">
+      <v-card class="rounded-lg elevation-8">
+        <v-card-title class="text-h6 font-weight-bold">
+          Accept Ticket
+        </v-card-title>
+        <v-divider></v-divider>
+
+        <v-card-text v-if="ticketToAccept" class="pt-4">
+          <!-- Ticket Info -->
+          <div class="mb-3">
+            <span class="font-weight-bold">Title:</span>
+            <span>{{ ticketToAccept.title }}</span>
+          </div>
+          <div class="mb-3">
+            <span class="font-weight-bold">Description:</span>
+            <span>{{ ticketToAccept.description }}</span>
+          </div>
+
+              <!-- Date Picker -->
+          <!-- <v-date-picker
+            v-model="closingDate"
+            title="Select Closing Date"
+            elevation="2"
+            :min="today"
+          /> -->
+
+          <v-date-picker v-model="closingDate" :min="today" />
+        <v-time-picker v-model="closingTime" format="24hr" />
+
+
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="acceptDialog = false">Cancel</v-btn>
+          <v-btn
+            color="success"
+            text
+            :disabled="!closingDate"
+            @click="submitAccept"
+          >
+            Accept
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
@@ -216,7 +266,6 @@ import api from '@/plugins/axios'
 
 const headers = [
   { title: '#', key: 'sn', sortable: false },
-//   { title: 'ID', key: 'id' },
   { title: 'Title', key: 'title' },
   { title: 'Description', key: 'description' },
   { title: 'Status', key: 'status' },
@@ -229,21 +278,51 @@ const tickets = ref([])
 const dialog = ref(false)
 const selectedTicket = ref(null)
 
-// Delete dialog state
 const deleteDialog = ref(false)
 const ticketToDelete = ref(null)
+
+const acceptDialog = ref(false)
+const ticketToAccept = ref(null)
+const closingDate = ref(null)
+const closingTime = ref(null)
+
+const today = new Date().toISOString().split('T')[0]  // YYYY-MM-DD
+
 
 const getTickets = async () => {
   try {
     const response = await api.get('/ticket')
     tickets.value = response.data
-    console.log(tickets.value)
   } catch (error) {
     console.error(error)
   }
 }
 
 onMounted(getTickets)
+
+function formatDateTime(dateInput, timeStr) {
+  if (!dateInput || !timeStr) return null;
+
+  // Convert Date object -> YYYY-MM-DD
+  let dateStr;
+  if (dateInput instanceof Date) {
+    dateStr = dateInput.toISOString().split("T")[0];
+  } else {
+    dateStr = dateInput; // already YYYY-MM-DD
+  }
+
+  // Normalize time
+  let timePart = timeStr;
+  if (/^\d{2}:\d{2}$/.test(timeStr)) {
+    timePart = `${timeStr}:00`; // add seconds if missing
+  }
+
+  // Build valid datetime string
+  return `${dateStr} ${timePart}`; // "2025-10-04 11:14:00"
+}
+
+
+
 
 // Action handlers
 const editTicket = (item) => console.log('Edit', item)
@@ -252,8 +331,42 @@ const viewTicket = (item) => {
   selectedTicket.value = item
   dialog.value = true
 }
+
 const transferTicket = (item) => console.log('Transfer', item)
-const acceptTicket = (item) => console.log('Accept', item)
+
+const acceptTicket = (item) => {
+  ticketToAccept.value = item
+  closingDate.value = null
+  acceptDialog.value = true
+}
+
+const submitAccept = async () => {
+  try {
+    const fullCloseDate = formatDateTime(closingDate.value, closingTime.value);
+
+    if (!fullCloseDate) {
+      console.error("Please select both valid date and time");
+      return;
+    }
+
+    console.log("Submitting close_date:", fullCloseDate); 
+    // Example: "2025-10-11 11:20:00"
+
+    const response = await api.patch(`/ticket/${ticketToAccept.value.id}/accept`, {
+      close_date: fullCloseDate,
+    });
+
+    console.log("Ticket accepted:", response.data);
+
+    await getTickets();
+    acceptDialog.value = false;
+  } catch (error) {
+    console.error(error.response?.data || error);
+  }
+};
+
+
+
 const closeTicket = (item) => console.log('Close', item)
 
 const confirmDelete = (item) => {
@@ -266,7 +379,6 @@ const deleteTicket = async () => {
     await api.delete(`/ticket/${ticketToDelete.value.id}`)
     tickets.value = tickets.value.filter((t) => t.id !== ticketToDelete.value.id)
     deleteDialog.value = false
-    console.log(`Ticket ${ticketToDelete.value.id} deleted`)
   } catch (error) {
     console.error(error)
   }

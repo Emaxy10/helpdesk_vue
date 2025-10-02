@@ -21,6 +21,7 @@ declare module 'vue-router/auto-routes' {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
     '/CreateTicketPage': RouteRecordInfo<'/CreateTicketPage', '/CreateTicketPage', Record<never, never>, Record<never, never>>,
     '/Dashboard': RouteRecordInfo<'/Dashboard', '/Dashboard', Record<never, never>, Record<never, never>>,
+    '/EditTicketPage': RouteRecordInfo<'/EditTicketPage', '/EditTicketPage', Record<never, never>, Record<never, never>>,
     '/LoginPage': RouteRecordInfo<'/LoginPage', '/LoginPage', Record<never, never>, Record<never, never>>,
     '/RegisterPage': RouteRecordInfo<'/RegisterPage', '/RegisterPage', Record<never, never>, Record<never, never>>,
     '/Tickets': RouteRecordInfo<'/Tickets', '/Tickets', Record<never, never>, Record<never, never>>,
@@ -47,6 +48,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/Dashboard.vue': {
       routes: '/Dashboard'
+      views: never
+    }
+    'src/pages/EditTicketPage.vue': {
+      routes: '/EditTicketPage'
       views: never
     }
     'src/pages/LoginPage.vue': {
