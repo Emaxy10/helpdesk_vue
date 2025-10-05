@@ -25,6 +25,13 @@
           title="All Tickets"
           to="/tickets"
         />
+
+        <v-list-item
+          prepend-icon="mdi-account-tie" 
+          title="My Tickets"
+          to="/tickets/my"
+        />
+
       </v-list-group>
 
       <!-- Settings -->

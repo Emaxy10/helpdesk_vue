@@ -4,12 +4,38 @@
       <span class="text-h6 font-weight-bold">Tickets</span>
     </v-card-title>
 
-    <v-data-table
+    
+    <!-- 🔎 Filter Controls -->
+    <div class="d-flex mb-4 gap-4">
+      <!-- Filter by Status -->
+      <v-select
+        v-model="statusFilter"
+        :items="statusOptions"
+        label="Filter by Status"
+        clearable
+        multiple
+        dense
+        class="mr-4"
+      />
+
+      <!-- Filter by Priority -->
+      <v-select
+        v-model="priorityFilter"
+        :items="priorityOptions"
+        label="Filter by Priority"
+        clearable
+        multiple
+        dense
+      />
+    </div>
+
+   <v-data-table
       :headers="headers"
-      :items="tickets"
+      :items="filteredTickets"
       class="elevation-1"
       item-value="id"
     >
+
       <!-- Dynamic numbering -->
       <template v-slot:item.sn="{ index }">
         {{ index + 1 }}
@@ -286,6 +312,10 @@ const ticketToAccept = ref(null)
 const closingDate = ref(null)
 const closingTime = ref(null)
 
+// Filters
+const statusFilter = ref(null);
+const priorityFilter = ref(null);
+
 const today = new Date().toISOString().split('T')[0]  // YYYY-MM-DD
 
 
@@ -411,4 +441,27 @@ const getPriorityColor = (priority) => {
       return 'grey'
   }
 }
+
+// ✅ Computed list that respects filters
+const statusOptions = ["Open", "In Progress", "Closed", "Rejected"];
+const priorityOptions = ["Low", "Medium", "High"];
+
+const filteredTickets = computed(() => {
+  return tickets.value.filter((t) => {
+    const status = t.status?.toLowerCase();
+    const priority = t.priority?.toLowerCase();
+
+    const matchesStatus =
+      !statusFilter.value?.length ||
+      statusFilter.value.map(s => s.toLowerCase()).includes(status);
+
+    const matchesPriority =
+      !priorityFilter.value?.length ||
+      priorityFilter.value.map(p => p.toLowerCase()).includes(priority);
+
+    return matchesStatus && matchesPriority;
+  });
+});
+
+
 </script>
