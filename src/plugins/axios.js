@@ -1,5 +1,7 @@
 // plugins/axios.js
 import axios from "axios"
+import { useAuthStore } from "@/stores/auth"
+import router from '@/router'
 
 const api = axios.create({
   baseURL: "http://localhost/helpdesk/public", 
@@ -20,6 +22,22 @@ api.interceptors.request.use((config) => {
   }
   return config
 })
+
+
+api.interceptors.response.use(
+  response => response,
+
+  error => {
+    if(error.response && error.response.status === 401){
+      console.log(error.response);
+      //clear tokens
+      alert("Not logged in")
+         // Redirect to login page
+      router.push('/login') // make sure 'login' is a named route
+    }
+    return Promise.reject(error)
+  }
+)
 
 // helper function to get cookie value
 function getCookie(name) {

@@ -71,8 +71,8 @@
                   :key="comment.id"
                   class="border-b py-2"
                 >
-                  <v-list-item-title>{{ comment.user.name }}</v-list-item-title>
-                  <v-list-item-subtitle>{{ comment.body }}</v-list-item-subtitle>
+                  <v-list-item-title>  {{ comment.user?.name || 'Unknown User' }}</v-list-item-title>
+                  <v-list-item-subtitle>{{ comment.comment }}</v-list-item-subtitle>
                   <small class="text-grey">
                     {{ new Date(comment.created_at).toLocaleString() }}
                   </small>
@@ -121,6 +121,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import api from '@/plugins/axios';
+import { useRouter } from 'vue-router';
 
 const tickets = ref([]);
 const showComments = ref(false);
@@ -129,6 +130,7 @@ const comments = ref([]);
 const loadingComments = ref(false);
 const newComment = ref('');
 const submitting = ref(false);
+const router = useRouter();
 
 const headers = [
   { title: 'Title', key: 'title' },
@@ -146,7 +148,12 @@ const getTickets = async () => {
   try {
     const response = await api.get('/ticket/my');
     tickets.value = response.data;
+    
   } catch (error) {
+    // if(error.response.status === 401){
+    //     alert("Login to continue")
+    //     router.push('/login')
+    // }
     console.error('Error fetching tickets:', error);
   }
 };
@@ -160,7 +167,10 @@ const openComments = async (ticket) => {
 
   try {
     const response = await api.get(`/tickets/${ticket.id}/comments`);
-    comments.value = response.data;
+    comments.value = response.data.comments || [];
+
+    console.log(comments.value)
+
   } catch (error) {
     console.error('Error loading comments:', error);
   } finally {
@@ -175,7 +185,7 @@ const postComment = async () => {
   submitting.value = true;
   try {
     const response = await api.post(`/tickets/${selectedTicket.value.id}/comments`, {
-      body: newComment.value,
+      comment: newComment.value,
     });
     comments.value.unshift(response.data.comment); // Add new comment to top
     newComment.value = '';
