@@ -288,7 +288,55 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- 🔁 Transfer Ticket Dialog -->
+  <v-dialog v-model="transferDialog" max-width="600">
+    <v-card class="rounded-lg elevation-8">
+      <v-card-title class="text-h6 font-weight-bold">
+        Transfer Ticket
+      </v-card-title>
+
+      <v-divider></v-divider>
+
+      <v-card-text v-if="ticketToTransfer" class="pt-4">
+        <p class="mb-2">
+          <strong>Ticket:</strong> {{ ticketToTransfer.title }}
+        </p>
+
+        <v-list>
+          <v-list-item
+            v-for="agent in agents"
+            :key="agent.id"
+            class="d-flex justify-space-between align-center"
+          >
+            <div>
+              <v-icon color="primary" start>mdi-account</v-icon>
+              {{ agent.name }}
+            </div>
+            <v-btn
+              color="primary"
+              text
+              size="small"
+              @click="assignAgent(agent.id)"
+            >
+              Assign
+            </v-btn>
+          </v-list-item>
+        </v-list>
+      </v-card-text>
+
+      <v-divider></v-divider>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn text @click="transferDialog = false">Close</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
   </v-card>
+
+
 </template>
 
 <script setup>
@@ -310,6 +358,10 @@ const tickets = ref([])
 const agents = ref([])
 const dialog = ref(false)
 const selectedTicket = ref(null)
+
+//transfer
+const transferDialog = ref(false)
+const ticketToTransfer = ref(null)
 
 const deleteDialog = ref(false)
 const ticketToDelete = ref(null)
@@ -458,6 +510,20 @@ const getPriorityColor = (priority) => {
       return 'grey'
   }
 }
+
+const assignAgent = async (agentId) => {
+  try {
+    const response = await api.patch(`/ticket/${ticketToTransfer.value.id}/transfer`, {
+      assigned_to: agentId,
+    })
+    await getTickets()
+    transferDialog.value = false
+     alert("Ticket transferred:", response.data)
+  } catch (error) {
+    console.error('Error assigning agent:', error.response?.data || error)
+  }
+}
+
 
 // ✅ Computed list that respects filters
 const statusOptions = ["Open", "In Progress", "Closed", "Rejected"];
