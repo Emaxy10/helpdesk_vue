@@ -46,6 +46,11 @@
         {{ item.creator?.name || 'N/A' }}
       </template>
 
+      <!-- Created By -->
+      <template v-slot:item.agent="{ item }">
+        {{ item.agent?.name || 'N/A' }}
+      </template>
+
       <!-- Actions -->
     <template v-slot:item.actions="{ item }">
         <!-- Edit -->
@@ -201,7 +206,7 @@
           <!-- Created By -->
           <div class="mb-3">
             <span class="font-weight-bold">Created By:</span>
-            <span>{{ selectedTicket.agent?.name || 'N/A' }}</span>
+            <span>{{ selectedTicket.creator?.name || 'N/A' }}</span>
           </div>
         </v-card-text>
 
@@ -297,10 +302,12 @@ const headers = [
   { title: 'Status', key: 'status' },
   { title: 'Priority', key: 'priority' },
   { title: 'Created By', key: 'user' },
+  { title: 'Agent', key: 'agent' },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
 const tickets = ref([])
+const agents = ref([])
 const dialog = ref(false)
 const selectedTicket = ref(null)
 
@@ -362,7 +369,17 @@ const viewTicket = (item) => {
   dialog.value = true
 }
 
-const transferTicket = (item) => console.log('Transfer', item)
+const transferTicket = async(item) => {
+  ticketToTransfer.value = item
+  transferDialog.value = true
+
+  try {
+    const response = await api.get('/agent') // Adjust API endpoint as needed
+    agents.value = response.data
+  } catch (error) {
+    console.error('Failed to fetch agents:', error)
+  }
+}
 
 const acceptTicket = (item) => {
   ticketToAccept.value = item
