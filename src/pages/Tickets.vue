@@ -334,6 +334,25 @@
     </v-card>
   </v-dialog>
 
+  <!-- 🧷 Confirm Close Dialog -->
+<v-dialog v-model="closeDialog" max-width="400">
+  <v-card>
+    <v-card-title class="text-h6 font-weight-bold">
+      Confirm Close
+    </v-card-title>
+    <v-card-text>
+      Are you sure you want to close
+      <strong>{{ ticketToClose?.title }}</strong>?
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn text @click="closeDialog = false">Cancel</v-btn>
+      <v-btn color="grey-darken-1" text @click="confirmCloseTicket">Close Ticket</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+
+
   </v-card>
 
 
@@ -358,6 +377,11 @@ const tickets = ref([])
 const agents = ref([])
 const dialog = ref(false)
 const selectedTicket = ref(null)
+
+//close
+const closeDialog = ref(false)
+const ticketToClose = ref(null)
+
 
 //transfer
 const transferDialog = ref(false)
@@ -466,7 +490,25 @@ const submitAccept = async () => {
 
 
 
-const closeTicket = (item) => console.log('Close', item)
+const closeTicket = (item) => {
+   ticketToClose.value = item
+  closeDialog.value = true
+}
+
+//Confirm closing ticket
+const confirmCloseTicket = async () => {
+  try {
+    const response = await api.patch(`/ticket/${ticketToClose.value.id}/close`)
+    console.log("Ticket closed:", response.data)
+    await getTickets()
+    closeDialog.value = false
+  } catch (error) {
+    console.error("Error closing ticket:", error.response?.data || error)
+  }
+}
+
+
+
 
 const confirmDelete = (item) => {
   ticketToDelete.value = item

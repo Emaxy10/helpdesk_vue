@@ -18,9 +18,15 @@ import MyTickets from '@/pages/MyTickets.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+      // 👇 Redirect root ("/") to login page
       {
         path: '/',
+        redirect: '/login'
+      },
 
+
+      {
+        path: '/',
         component: AuthLayout,
         children: [
           {
