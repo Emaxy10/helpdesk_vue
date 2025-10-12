@@ -4,8 +4,10 @@
       <span class="text-h6 font-weight-bold">Tickets</span>
     </v-card-title>
 
-    <!-- 🔎 Filters -->
+    
+    <!-- 🔎 Filter Controls -->
     <div class="d-flex mb-4 gap-4">
+      <!-- Filter by Status -->
       <v-select
         v-model="statusFilter"
         :items="statusOptions"
@@ -16,6 +18,7 @@
         class="mr-4"
       />
 
+      <!-- Filter by Priority -->
       <v-select
         v-model="priorityFilter"
         :items="priorityOptions"
@@ -26,130 +29,133 @@
       />
     </div>
 
-    <!-- 🧾 Tickets Table -->
-    <v-data-table
+   <v-data-table
       :headers="headers"
       :items="filteredTickets"
       class="elevation-1"
       item-value="id"
     >
-      <!-- Row Number -->
+
+      <!-- Dynamic numbering -->
       <template v-slot:item.sn="{ index }">
         {{ index + 1 }}
       </template>
 
       <!-- Created By -->
       <template v-slot:item.user="{ item }">
-        {{ item?.creator?.name || 'N/A' }}
+        {{ item.creator?.name || 'N/A' }}
       </template>
 
-      <!-- Agent -->
+      <!-- Created By -->
       <template v-slot:item.agent="{ item }">
-        {{ item?.agent?.name || 'N/A' }}
+        {{ item.agent?.name || 'N/A' }}
       </template>
 
       <!-- Actions -->
-      <template v-slot:item.actions="{ item }">
-        <!-- Edit (disabled if closed) -->
+    <template v-slot:item.actions="{ item }">
+        <!-- Edit -->
         <v-tooltip text="Edit">
-          <template #activator="{ props }">
+            <template #activator="{ props }">
             <v-btn
-              v-bind="props"
-              icon
-              variant="text"
-              color="primary"
-              size="small"
-              :disabled="item.status?.toLowerCase() === 'closed'"
-              @click="editTicket(item)"
+                v-bind="props"
+                icon
+                variant="text"
+                color="primary"
+                size="small"
+                @click="editTicket(item)"
             >
-              <v-icon>mdi-pencil</v-icon>
+                <v-icon>mdi-pencil</v-icon>
             </v-btn>
-          </template>
+            </template>
         </v-tooltip>
 
         <!-- Info -->
         <v-tooltip text="View Details">
-          <template #activator="{ props }">
+            <template #activator="{ props }">
             <v-btn
-              v-bind="props"
-              icon
-              variant="text"
-              color="info"
-              size="small"
-              @click="viewTicket(item)"
+                v-bind="props"
+                icon
+                variant="text"
+                color="info"
+                size="small"
+                @click="viewTicket(item)"
             >
-              <v-icon>mdi-information</v-icon>
+                <v-icon>mdi-information</v-icon>
             </v-btn>
-          </template>
+            </template>
         </v-tooltip>
 
         <!-- Transfer -->
-        <v-tooltip v-if="showTransferAccept(item.status)" text="Transfer">
-          <template #activator="{ props }">
+        <v-tooltip text="Transfer">
+            <template #activator="{ props }">
             <v-btn
-              v-bind="props"
-              icon
-              variant="text"
-              color="warning"
-              size="small"
-              @click="transferTicket(item)"
+                v-bind="props"
+                icon
+                variant="text"
+                color="warning"
+                size="small"
+                @click="transferTicket(item)"
             >
-              <v-icon>mdi-share</v-icon>
+                <v-icon>mdi-share</v-icon>
             </v-btn>
-          </template>
-        </v-tooltip>
+    </template>
+  </v-tooltip>
 
-        <!-- Accept -->
-        <v-tooltip v-if="showTransferAccept(item.status)" text="Accept">
-          <template #activator="{ props }">
-            <v-btn
-              v-bind="props"
-              icon
-              variant="text"
-              color="success"
-              size="small"
-              @click="acceptTicket(item)"
-            >
-              <v-icon>mdi-check</v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
+  <!-- Accept -->
+  <v-tooltip text="Accept">
+    <template #activator="{ props }">
+      <v-btn
+        v-bind="props"
+        icon
+        variant="text"
+        color="success"
+        size="small"
+        @click="acceptTicket(item)"
+      >
+        <v-icon>mdi-check</v-icon>
+      </v-btn>
+    </template>
+  </v-tooltip>
 
-        <!-- Close -->
-        <v-tooltip v-if="showCloseDelete(item.status)" text="Close">
-          <template #activator="{ props }">
-            <v-btn
-              v-bind="props"
-              icon
-              variant="text"
-              color="grey-darken-1"
-              size="small"
-              @click="closeTicket(item)"
-            >
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
 
-        <!-- Delete -->
-        <v-tooltip v-if="showCloseDelete(item.status)" text="Delete">
-          <template #activator="{ props }">
-            <v-btn
-              v-bind="props"
-              icon
-              variant="text"
-              color="red-darken-2"
-              size="small"
-              @click="confirmDelete(item)"
-            >
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
-      </template>
+<!-- Close -->
+  <v-tooltip text="Close">
+    <template #activator="{ props }">
+      <v-btn
+        v-bind="props"
+        icon
+        variant="text"
+        color="grey-darken-1"
+        size="small"
+        @click="closeTicket(item)"
+      >
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+    </template>
+  </v-tooltip>
+
+
+
+  <!-- Delete -->
+  <v-tooltip text="Delete">
+    <template #activator="{ props }">
+      <v-btn
+        v-bind="props"
+        icon
+        variant="text"
+        color="red-darken-2"
+        size="small"
+        @click="confirmDelete(item)"
+      >
+        <v-icon>mdi-delete</v-icon>
+      </v-btn>
+    </template>
+  </v-tooltip>
+</template>
+
     </v-data-table>
 
-    <!-- 📄 Ticket Info Dialog -->
+    <!-- Ticket Info Dialog -->
     <v-dialog v-model="dialog" max-width="500">
       <v-card class="rounded-lg elevation-8">
         <v-card-title class="text-h6 font-weight-bold">
@@ -159,16 +165,19 @@
         <v-divider></v-divider>
 
         <v-card-text v-if="selectedTicket" class="pt-4">
+          <!-- Title -->
           <div class="mb-3">
             <span class="font-weight-bold">Title:</span>
             <span>{{ selectedTicket.title || 'N/A' }}</span>
           </div>
 
+          <!-- Description -->
           <div class="mb-3">
             <span class="font-weight-bold">Description:</span>
             <span>{{ selectedTicket.description || 'N/A' }}</span>
           </div>
 
+          <!-- Status -->
           <div class="mb-3">
             <span class="font-weight-bold">Status:</span>
             <v-chip
@@ -181,6 +190,7 @@
             </v-chip>
           </div>
 
+          <!-- Priority -->
           <div class="mb-3">
             <span class="font-weight-bold">Priority:</span>
             <v-chip
@@ -193,6 +203,7 @@
             </v-chip>
           </div>
 
+          <!-- Created By -->
           <div class="mb-3">
             <span class="font-weight-bold">Created By:</span>
             <span>{{ selectedTicket.creator?.name || 'N/A' }}</span>
@@ -203,35 +214,152 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text color="primary" @click="dialog = false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- ❗ Confirm Close Dialog -->
-    <v-dialog v-model="closeDialog" max-width="400">
-      <v-card>
-        <v-card-title class="text-h6 font-weight-bold">
-          Confirm Close
-        </v-card-title>
-        <v-card-text>
-          Are you sure you want to close
-          <strong>{{ ticketToClose?.title }}</strong>?
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn text @click="closeDialog = false">Cancel</v-btn>
-          <v-btn color="grey-darken-1" text @click="confirmCloseTicket">
-            Close Ticket
+          <v-btn text color="primary" @click="dialog = false">
+            Close
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Confirm Delete Dialog -->
+    <v-dialog v-model="deleteDialog" max-width="400">
+      <v-card>
+        <v-card-title class="text-h6 font-weight-bold">
+          Confirm Delete
+        </v-card-title>
+        <v-card-text>
+          Are you sure you want to delete
+          <strong>{{ ticketToDelete?.title }}</strong>?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="deleteDialog = false">Cancel</v-btn>
+          <v-btn color="red" text @click="deleteTicket">Delete</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+     <!-- Accept Ticket Dialog -->
+    <v-dialog v-model="acceptDialog" max-width="500">
+      <v-card class="rounded-lg elevation-8">
+        <v-card-title class="text-h6 font-weight-bold">
+          Accept Ticket
+        </v-card-title>
+        <v-divider></v-divider>
+
+        <v-card-text v-if="ticketToAccept" class="pt-4">
+          <!-- Ticket Info -->
+          <div class="mb-3">
+            <span class="font-weight-bold">Title:</span>
+            <span>{{ ticketToAccept.title }}</span>
+          </div>
+          <div class="mb-3">
+            <span class="font-weight-bold">Description:</span>
+            <span>{{ ticketToAccept.description }}</span>
+          </div>
+
+              <!-- Date Picker -->
+          <!-- <v-date-picker
+            v-model="closingDate"
+            title="Select Closing Date"
+            elevation="2"
+            :min="today"
+          /> -->
+
+          <v-date-picker v-model="closingDate" :min="today" />
+        <v-time-picker v-model="closingTime" format="24hr" />
+
+
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="acceptDialog = false">Cancel</v-btn>
+          <v-btn
+            color="success"
+            text
+            :disabled="!closingDate"
+            @click="submitAccept"
+          >
+            Accept
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- 🔁 Transfer Ticket Dialog -->
+  <v-dialog v-model="transferDialog" max-width="600">
+    <v-card class="rounded-lg elevation-8">
+      <v-card-title class="text-h6 font-weight-bold">
+        Transfer Ticket
+      </v-card-title>
+
+      <v-divider></v-divider>
+
+      <v-card-text v-if="ticketToTransfer" class="pt-4">
+        <p class="mb-2">
+          <strong>Ticket:</strong> {{ ticketToTransfer.title }}
+        </p>
+
+        <v-list>
+          <v-list-item
+            v-for="agent in agents"
+            :key="agent.id"
+            class="d-flex justify-space-between align-center"
+          >
+            <div>
+              <v-icon color="primary" start>mdi-account</v-icon>
+              {{ agent.name }}
+            </div>
+            <v-btn
+              color="primary"
+              text
+              size="small"
+              @click="assignAgent(agent.id)"
+            >
+              Assign
+            </v-btn>
+          </v-list-item>
+        </v-list>
+      </v-card-text>
+
+      <v-divider></v-divider>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn text @click="transferDialog = false">Close</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <!-- 🧷 Confirm Close Dialog -->
+<v-dialog v-model="closeDialog" max-width="400">
+  <v-card>
+    <v-card-title class="text-h6 font-weight-bold">
+      Confirm Close
+    </v-card-title>
+    <v-card-text>
+      Are you sure you want to close
+      <strong>{{ ticketToClose?.title }}</strong>?
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn text @click="closeDialog = false">Cancel</v-btn>
+      <v-btn color="grey-darken-1" text @click="confirmCloseTicket">Close Ticket</v-btn>
+    </v-card-actions>
   </v-card>
+</v-dialog>
+
+
+  </v-card>
+
+
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import api from '@/plugins/axios'
 
 const headers = [
@@ -246,60 +374,141 @@ const headers = [
 ]
 
 const tickets = ref([])
+const agents = ref([])
 const dialog = ref(false)
 const selectedTicket = ref(null)
+
+//close
 const closeDialog = ref(false)
 const ticketToClose = ref(null)
+
+
+//transfer
+const transferDialog = ref(false)
+const ticketToTransfer = ref(null)
+
 const deleteDialog = ref(false)
 const ticketToDelete = ref(null)
-const statusFilter = ref([])
-const priorityFilter = ref([])
 
-// ✅ Button visibility logic
-const showTransferAccept = (status) => {
-  if (!status) return false
-  const s = status.toLowerCase()
-  return !['in_progress', 'in progress', 'closed', 'rejected'].includes(s)
-}
+const acceptDialog = ref(false)
+const ticketToAccept = ref(null)
+const closingDate = ref(null)
+const closingTime = ref(null)
 
-const showCloseDelete = (status) => {
-  if (!status) return false
-  return status.toLowerCase() !== 'closed'
-}
+// Filters
+const statusFilter = ref(null);
+const priorityFilter = ref(null);
+
+const today = new Date().toISOString().split('T')[0]  // YYYY-MM-DD
+
 
 const getTickets = async () => {
   try {
     const response = await api.get('/ticket')
     tickets.value = response.data
   } catch (error) {
-    console.error('Error fetching tickets:', error)
+    console.error(error)
   }
 }
+
 onMounted(getTickets)
+
+function formatDateTime(dateInput, timeStr) {
+  if (!dateInput || !timeStr) return null;
+
+  // Convert Date object -> YYYY-MM-DD
+  let dateStr;
+  if (dateInput instanceof Date) {
+    dateStr = dateInput.toISOString().split("T")[0];
+  } else {
+    dateStr = dateInput; // already YYYY-MM-DD
+  }
+
+  // Normalize time
+  let timePart = timeStr;
+  if (/^\d{2}:\d{2}$/.test(timeStr)) {
+    timePart = `${timeStr}:00`; // add seconds if missing
+  }
+
+  // Build valid datetime string
+  return `${dateStr} ${timePart}`; // "2025-10-04 11:14:00"
+}
+
+
+
+
+// Action handlers
+const editTicket = (item) => console.log('Edit', item)
 
 const viewTicket = (item) => {
   selectedTicket.value = item
   dialog.value = true
 }
 
-const editTicket = (item) => console.log('Edit', item)
-const transferTicket = (item) => console.log('Transfer', item)
-const acceptTicket = (item) => console.log('Accept', item)
+const transferTicket = async(item) => {
+  ticketToTransfer.value = item
+  transferDialog.value = true
+
+  try {
+    const response = await api.get('/agent') // Adjust API endpoint as needed
+    agents.value = response.data
+  } catch (error) {
+    console.error('Failed to fetch agents:', error)
+  }
+}
+
+const acceptTicket = (item) => {
+  ticketToAccept.value = item
+  closingDate.value = null
+  acceptDialog.value = true
+}
+
+const submitAccept = async () => {
+  try {
+    const fullCloseDate = formatDateTime(closingDate.value, closingTime.value);
+
+    if (!fullCloseDate) {
+      console.error("Please select both valid date and time");
+      return;
+    }
+
+    console.log("Submitting close_date:", fullCloseDate); 
+    // Example: "2025-10-11 11:20:00"
+
+    const response = await api.patch(`/ticket/${ticketToAccept.value.id}/accept`, {
+      close_date: fullCloseDate,
+    });
+
+    console.log("Ticket accepted:", response.data);
+
+    await getTickets();
+    acceptDialog.value = false;
+  } catch (error) {
+    console.error(error.response?.data || error);
+  }
+};
+
+
 
 const closeTicket = (item) => {
-  ticketToClose.value = item
+   ticketToClose.value = item
   closeDialog.value = true
 }
 
+//Confirm closing ticket
 const confirmCloseTicket = async () => {
   try {
-    await api.patch(`/ticket/${ticketToClose.value.id}/close`)
+    const response = await api.patch(`/ticket/${ticketToClose.value.id}/close`)
+    console.log("Ticket closed:", response.data)
     await getTickets()
     closeDialog.value = false
   } catch (error) {
-    console.error(error)
+    console.error("Error closing ticket:", error.response?.data || error)
   }
 }
+
+
+
 
 const confirmDelete = (item) => {
   ticketToDelete.value = item
@@ -309,7 +518,7 @@ const confirmDelete = (item) => {
 const deleteTicket = async () => {
   try {
     await api.delete(`/ticket/${ticketToDelete.value.id}`)
-    tickets.value = tickets.value.filter(t => t.id !== ticketToDelete.value.id)
+    tickets.value = tickets.value.filter((t) => t.id !== ticketToDelete.value.id)
     deleteDialog.value = false
   } catch (error) {
     console.error(error)
@@ -318,47 +527,66 @@ const deleteTicket = async () => {
 
 const getStatusColor = (status) => {
   switch (status?.toLowerCase()) {
-    case 'open': return 'blue'
+    case 'open':
+      return 'blue'
     case 'in progress':
-    case 'in_progress': return 'orange'
-    case 'closed': return 'green'
-    case 'rejected': return 'red'
-    default: return 'grey'
+      return 'orange'
+    case 'closed':
+      return 'green'
+    case 'rejected':
+      return 'red'
+    default:
+      return 'grey'
   }
 }
 
 const getPriorityColor = (priority) => {
   switch (priority?.toLowerCase()) {
-    case 'low': return 'green'
-    case 'medium': return 'orange'
-    case 'high': return 'red'
-    default: return 'grey'
+    case 'low':
+      return 'green'
+    case 'medium':
+      return 'orange'
+    case 'high':
+      return 'red'
+    default:
+      return 'grey'
   }
 }
 
-const statusOptions = ['Open', 'In Progress', 'Closed', 'Rejected']
-const priorityOptions = ['Low', 'Medium', 'High']
+const assignAgent = async (agentId) => {
+  try {
+    const response = await api.patch(`/ticket/${ticketToTransfer.value.id}/transfer`, {
+      assigned_to: agentId,
+    })
+    await getTickets()
+    transferDialog.value = false
+     alert("Ticket transferred:", response.data)
+  } catch (error) {
+    console.error('Error assigning agent:', error.response?.data || error)
+  }
+}
+
+
+// ✅ Computed list that respects filters
+const statusOptions = ["Open", "In Progress", "Closed", "Rejected"];
+const priorityOptions = ["Low", "Medium", "High"];
 
 const filteredTickets = computed(() => {
-  return tickets.value.filter(t => {
-    const status = t.status?.toLowerCase()
-    const priority = t.priority?.toLowerCase()
+  return tickets.value.filter((t) => {
+    const status = t.status?.toLowerCase();
+    const priority = t.priority?.toLowerCase();
 
     const matchesStatus =
-      !statusFilter.value.length ||
-      statusFilter.value.map(s => s.toLowerCase()).includes(status)
+      !statusFilter.value?.length ||
+      statusFilter.value.map(s => s.toLowerCase()).includes(status);
 
     const matchesPriority =
-      !priorityFilter.value.length ||
-      priorityFilter.value.map(p => p.toLowerCase()).includes(priority)
+      !priorityFilter.value?.length ||
+      priorityFilter.value.map(p => p.toLowerCase()).includes(priority);
 
-    return matchesStatus && matchesPriority
-  })
-})
+    return matchesStatus && matchesPriority;
+  });
+});
+
+
 </script>
-
-<style scoped>
-.v-data-table {
-  border-radius: 10px;
-}
-</style>
