@@ -9,11 +9,7 @@
   >
     🎉 Ticket created successfully!
     <template v-slot:action="{ attrs }">
-      <v-btn
-        text
-        v-bind="attrs"
-        @click="success = false"
-      >
+      <v-btn text v-bind="attrs" @click="success = false">
         Close
       </v-btn>
     </template>
@@ -83,10 +79,11 @@
           color="primary"
           type="submit"
           class="ml-4"
-          :disabled="!valid"
+          :disabled="!valid || loading"
+          :loading="loading"
           prepend-icon="mdi-content-save"
         >
-          Save Ticket
+          <span v-if="!loading">Save Ticket</span>
         </v-btn>
       </div>
     </v-form>
@@ -100,6 +97,7 @@ import { useRouter } from "vue-router"
 
 const valid = ref(false)
 const success = ref(false)
+const loading = ref(false) // 🔄 loader state
 const router = useRouter()
 
 const ticket = ref({
@@ -132,30 +130,28 @@ const rules = {
 
 const submitForm = async () => {
   if (valid.value) {
+    loading.value = true // ⏳ start loading
     try {
       const response = await api.post("/ticket/create", ticket.value)
       console.log("Submitting ticket:", response.data)
 
-      // Show snackbar
       success.value = true
-
       router.push('/tickets')
-
-      // Reset the form
-      // resetForm()
     } catch (error) {
       console.error(error)
+    } finally {
+      loading.value = false // ✅ stop loading
     }
   }
 }
 
-// const resetForm = () => {
-//   ticket.value = {
-//     title: "",
-//     description: "",
-//     status: "open",
-//     priority: null,
-//     assigned_to: null,
-//   }
-// }
+const resetForm = () => {
+  ticket.value = {
+    title: "",
+    description: "",
+    status: "open",
+    priority: null,
+    assigned_to: null,
+  }
+}
 </script>
