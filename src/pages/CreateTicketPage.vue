@@ -9,9 +9,7 @@
   >
     🎉 Ticket created successfully!
     <template v-slot:action="{ attrs }">
-      <v-btn text v-bind="attrs" @click="success = false">
-        Close
-      </v-btn>
+      <v-btn text v-bind="attrs" @click="success = false">Close</v-btn>
     </template>
   </v-snackbar>
 
@@ -72,6 +70,18 @@
         :rules="[rules.required]"
       />
 
+      <!-- File Attachment -->
+      <v-file-input
+        v-model="attachments"
+        label="Attach Files (optional)"
+        multiple
+        show-size
+        counter
+        prepend-icon="mdi-paperclip"
+        accept="image/*, .txt, .log, .pdf, .docx, .xlsx"
+        class="mt-4"
+      />
+
       <!-- Actions -->
       <div class="d-flex justify-end mt-6">
         <v-btn text color="grey" @click="resetForm">Cancel</v-btn>
@@ -97,7 +107,7 @@ import { useRouter } from "vue-router"
 
 const valid = ref(false)
 const success = ref(false)
-const loading = ref(false) // 🔄 loader state
+const loading = ref(false)
 const router = useRouter()
 
 const ticket = ref({
@@ -107,6 +117,8 @@ const ticket = ref({
   priority: null,
   assigned_to: null,
 })
+
+const attachments = ref([]) // 📎 holds uploaded files
 
 const statuses = ["open", "in-progress", "resolved", "closed"]
 const priorities = ["low", "medium", "high"]
@@ -130,17 +142,31 @@ const rules = {
 
 const submitForm = async () => {
   if (valid.value) {
-    loading.value = true // ⏳ start loading
+    loading.value = true
     try {
-      const response = await api.post("/ticket/create", ticket.value)
-      console.log("Submitting ticket:", response.data)
+      const formData = new FormData()
+      formData.append("title", ticket.value.title)
+      formData.append("description", ticket.value.description)
+      formData.append("status", ticket.value.status)
+      formData.append("priority", ticket.value.priority)
+      formData.append("assigned_to", ticket.value.assigned_to)
 
+      // 📎 Append each file to FormData
+      attachments.value.forEach((file) => {
+        formData.append("attachments[]", file)
+      })
+
+      const response = await api.post("/ticket/create", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+
+      console.log("Ticket submitted:", response.data)
       success.value = true
-      router.push('/tickets')
+      router.push("/tickets")
     } catch (error) {
-      console.error(error)
+      console.error("Error submitting ticket:", error)
     } finally {
-      loading.value = false // ✅ stop loading
+      loading.value = false
     }
   }
 }
@@ -153,5 +179,6 @@ const resetForm = () => {
     priority: null,
     assigned_to: null,
   }
+  attachments.value = []
 }
 </script>
