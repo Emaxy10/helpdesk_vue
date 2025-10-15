@@ -76,5 +76,17 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    proxy: {
+      '/storage': {
+        target: 'http://localhost/helpdesk/public',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/storage/, '/storage'),
+      },
+      '/download': {
+        target: 'http://localhost/helpdesk/public',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/download/, '/download'),
+      },
+    },
   },
 })
