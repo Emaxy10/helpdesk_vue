@@ -10,21 +10,38 @@
         :items="agents"
         class="elevation-2 mt-4"
       >
-        <!-- Custom Actions Column -->
-        <template #item.actions="{ item }">
-          <v-btn
-            icon="mdi-information"
-            variant="text"
-            color="primary"
-            @click="viewInfo(item)"
-          />
+        <!-- 🔢 Dynamic numbering column -->
+        <template #item.index="{ index }">
+          {{ index + 1 }}
+        </template>
 
-          <v-btn
-            icon="mdi-delete"
-            variant="text"
-            color="error"
-            @click="removeAgent(item.id)"
-          />
+        <!-- 🧩 Custom Actions Column -->
+        <template #item.actions="{ item }">
+          <!-- Info Button with Tooltip -->
+          <v-tooltip text="View Info" location="top">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon="mdi-information"
+                variant="text"
+                color="primary"
+                @click="viewInfo(item)"
+              />
+            </template>
+          </v-tooltip>
+
+          <!-- Remove Button with Tooltip -->
+          <v-tooltip text="Remove Agent" location="top">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon="mdi-delete"
+                variant="text"
+                color="error"
+                @click="removeAgent(item.id)"
+              />
+            </template>
+          </v-tooltip>
         </template>
       </v-data-table>
     </v-card>
@@ -37,8 +54,9 @@ import api from "@/plugins/axios"
 
 const agents = ref([])
 
+// ✅ Add a header for dynamic numbering
 const headers = [
-  { title: "ID", key: "id" },
+  { title: "#", key: "index", sortable: false },
   { title: "Name", key: "name" },
   { title: "Email", key: "email" },
   { title: "Created At", key: "created_at" },
