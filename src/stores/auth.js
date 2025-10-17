@@ -1,6 +1,7 @@
 // stores/auth.js
 import { defineStore } from "pinia"
 import api from "@/plugins/axios"
+import router from "@/router"
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -55,6 +56,8 @@ export const useAuthStore = defineStore("auth", {
       try {
         await api.post("/logout")
         this.user = null
+
+        router.push('/login')
       } catch (error) {
         console.error('Logout error:', error)
       }
@@ -62,7 +65,6 @@ export const useAuthStore = defineStore("auth", {
 
     async fetchUser() {
       try {
-        console.log('Fetching user from:', '/user')
         const response = await api.get("/user")
         this.user = response.data
         console.log('User fetched successfully:', this.user)
