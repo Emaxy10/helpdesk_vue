@@ -15,6 +15,7 @@ import CreateTicketPage from '@/pages/CreateTicketPage.vue'
 import Tickets from '@/pages/Tickets.vue'
 import MyTickets from '@/pages/MyTickets.vue'
 import Ticket from '@/pages/Ticket.vue'
+import Agents from '@/pages/Agents.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -68,6 +69,10 @@ const router = createRouter({
             path:'tickets/:id',
             name:'tikcet',
             component: Ticket
+          },{
+            path:'agents',
+            name:'agents',
+            component: Agents
           }
         ]
       }
