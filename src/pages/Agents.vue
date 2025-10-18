@@ -1,23 +1,34 @@
 <template>
   <v-container>
     <v-card class="pa-4 rounded-lg">
-      <v-card-title class="text-h6 font-weight-bold">
-        👥 Agents
+      <v-card-title class="d-flex justify-space-between align-center">
+        <span class="text-h6 font-weight-bold">👥 Agents</span>
+
+        <!-- 🔍 Search Field -->
+        <v-text-field
+          v-model="search"
+          label="Search Agents"
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+          hide-details
+          dense
+          style="max-width: 300px"
+        />
       </v-card-title>
 
       <v-data-table
         :headers="headers"
-        :items="agents"
+        :items="filteredAgents"
         class="elevation-2 mt-4"
       >
-        <!-- 🔢 Dynamic numbering column -->
+        <!-- 🔢 Dynamic numbering -->
         <template #item.index="{ index }">
           {{ index + 1 }}
         </template>
 
-        <!-- 🧩 Custom Actions Column -->
+        <!-- 🧩 Actions Column -->
         <template #item.actions="{ item }">
-          <!-- Info Button with Tooltip -->
+          <!-- Info Button -->
           <v-tooltip text="View Info" location="top">
             <template #activator="{ props }">
               <v-btn
@@ -30,7 +41,7 @@
             </template>
           </v-tooltip>
 
-          <!-- Remove Button with Tooltip -->
+          <!-- Remove Button -->
           <v-tooltip text="Remove Agent" location="top">
             <template #activator="{ props }">
               <v-btn
@@ -49,20 +60,30 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, onMounted, computed } from "vue"
 import api from "@/plugins/axios"
 
 const agents = ref([])
+const search = ref("")
 
-// ✅ Add a header for dynamic numbering
+// ✅ Table headers
 const headers = [
   { title: "#", key: "index", sortable: false },
   { title: "Name", key: "name" },
   { title: "Email", key: "email" },
-  { title: "Created At", key: "created_at" },
   { title: "Actions", key: "actions", sortable: false },
 ]
 
+// ✅ Computed: filters agents based on search
+const filteredAgents = computed(() => {
+  if (!search.value) return agents.value
+  return agents.value.filter(agent =>
+    [agent.name, agent.email]
+      .some(field => field?.toLowerCase().includes(search.value.toLowerCase()))
+  )
+})
+
+// ✅ Fetch agents
 async function getAgent() {
   try {
     const response = await api.get("/agent")
@@ -72,6 +93,7 @@ async function getAgent() {
   }
 }
 
+// ✅ Remove agent
 async function removeAgent(id) {
   if (!confirm("Are you sure you want to remove this agent?")) return
 
@@ -83,6 +105,7 @@ async function removeAgent(id) {
   }
 }
 
+// ✅ View agent info
 function viewInfo(agent) {
   alert(`Agent Info:\n\nName: ${agent.name}\nEmail: ${agent.email}`)
 }
