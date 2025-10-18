@@ -98,7 +98,7 @@ async function removeAgent(id) {
   if (!confirm("Are you sure you want to remove this agent?")) return
 
   try {
-    await api.delete(`/agent/${id}`)
+    await api.delete(`/agent/remove/${id}`)
     agents.value = agents.value.filter(agent => agent.id !== id)
   } catch (error) {
     console.error(error)
