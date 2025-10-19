@@ -137,7 +137,8 @@
 
 
   <!-- Delete -->
-  <v-tooltip text="Delete">
+   <div v-if="is_admin">
+    <v-tooltip text="Delete">
     <template #activator="{ props }">
       <v-btn
         v-bind="props"
@@ -151,6 +152,8 @@
       </v-btn>
     </template>
   </v-tooltip>
+  </div>
+  
 </template>
 
     </v-data-table>
@@ -361,6 +364,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '@/plugins/axios'
+import { useAuthStore } from '@/stores/auth'
+
+const store = useAuthStore()
 
 const headers = [
   { title: '#', key: 'sn', sortable: false },
@@ -587,6 +593,14 @@ const filteredTickets = computed(() => {
     return matchesStatus && matchesPriority;
   });
 });
+
+//Check role
+const is_admin = computed(() =>{
+   if (!store.user?.roles) return false
+    return store.user.roles.some(role =>
+      ['admin'].includes(role.name.toLowerCase())
+    )
+})
 
 
 </script>

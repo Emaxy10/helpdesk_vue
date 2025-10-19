@@ -29,6 +29,7 @@
           />
 
           <v-list-item
+            v-if="is_admin"
             prepend-icon="mdi-account-plus"
             title="Add Agent"
             to="/agents/add"
@@ -71,5 +72,12 @@ const hasTicketAccess = computed(() => {
   return store.user.roles.some(role =>
     ['admin', 'agent'].includes(role.name.toLowerCase())
   )
+})
+
+const is_admin = computed(() =>{
+   if (!store.user?.roles) return false
+    return store.user.roles.some(role =>
+      ['admin'].includes(role.name.toLowerCase())
+    )
 })
 </script>

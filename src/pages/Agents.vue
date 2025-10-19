@@ -42,6 +42,7 @@
           </v-tooltip>
 
           <!-- Remove Button -->
+           <div v-if="is_admin">
           <v-tooltip text="Remove Agent" location="top">
             <template #activator="{ props }">
               <v-btn
@@ -53,6 +54,7 @@
               />
             </template>
           </v-tooltip>
+          </div>
         </template>
       </v-data-table>
     </v-card>
@@ -62,6 +64,10 @@
 <script setup>
 import { ref, onMounted, computed } from "vue"
 import api from "@/plugins/axios"
+
+import { useAuthStore } from '@/stores/auth'
+
+const store = useAuthStore()
 
 const agents = ref([])
 const search = ref("")
@@ -109,6 +115,13 @@ async function removeAgent(id) {
 function viewInfo(agent) {
   alert(`Agent Info:\n\nName: ${agent.name}\nEmail: ${agent.email}`)
 }
+
+const is_admin = computed(() =>{
+   if (!store.user?.roles) return false
+    return store.user.roles.some(role =>
+      ['admin'].includes(role.name.toLowerCase())
+    )
+})
 
 onMounted(getAgent)
 </script>
