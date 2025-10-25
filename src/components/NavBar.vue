@@ -1,6 +1,11 @@
 <template>
   <v-app-bar app color="green-darken-3" dark>
-    <v-app-bar-title>My App</v-app-bar-title>
+<v-app-bar-title class="d-flex align-center gap-2">
+  <v-icon icon="mdi-headset" size="30" class="text-white" />
+  <span class="text-h5 font-weight-bold text-white">HelpDesk</span>
+</v-app-bar-title>
+
+
 
     <v-spacer></v-spacer>
 

@@ -29,14 +29,20 @@ export const useAuthStore = defineStore("auth", {
         // 2. Attempt login
         const response = await api.post("/login", credentials)
         
-        console.log('Login response:', response)
+        console.log('Login response:', response.data.status)
+
+        if(response.data.status === 401){
+          alert('email or passowrd incorret')
+          router.push('/login')
+          return { success: false } // ✅ Stop execution here
+        }
         
-        if (response.status === 200) {
-          console.log('Step 3: Fetching user data...')
+        if (response.data.status === 200) {
+        //   console.log('Step 3: Fetching user data...')
           
-          // 3. Get user data
-          await this.fetchUser()
-          console.log('Login successful, user:', this.user)
+        //   // 3. Get user data
+        //   await this.fetchUser()
+        //   console.log('Login successful, user:', this.user)
           return { success: true }
         }
       } catch (error) {

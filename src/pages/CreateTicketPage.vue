@@ -162,7 +162,7 @@ const submitForm = async () => {
 
       console.log("Ticket submitted:", response.data)
       success.value = true
-      router.push("/tickets")
+      router.push("/tickets/my")
     } catch (error) {
       console.error("Error submitting ticket:", error)
     } finally {

@@ -112,7 +112,10 @@ async function loginUser() {
   if (!success) return
 
   try {
-    await authStore.login(state)  // use Pinia action
+    const response = await authStore.login(state)  // use Pinia action
+    console.log(response.success)
+    
+    if(response.success === false) return    
     router.push('/dashboard')
   } catch (error) {
     console.error('Login error:', error.response?.data || error.message)
