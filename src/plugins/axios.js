@@ -4,7 +4,7 @@ import { useAuthStore } from "@/stores/auth"
 import router from '@/router'
 
 const api = axios.create({
-  baseURL: "http://localhost/helpdesk/public", 
+  baseURL: "http://localhost/helpdesk/public/api", 
   withCredentials: true,
   headers: {
     "Accept": "application/json",
@@ -23,21 +23,11 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-
-api.interceptors.response.use(
-  response => response,
-
-  error => {
-    if(error.response && error.response.status === 401){
-      console.log(error.response);
-      //clear tokens
-      alert("Not logged in")
-         // Redirect to login page
-      router.push('/login') // make sure 'login' is a named route
-    }
-    return Promise.reject(error)
-  }
-)
+// Load token from localStorage if it exists
+const token = localStorage.getItem("token");
+if (token) {
+  api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+}
 
 // helper function to get cookie value
 function getCookie(name) {

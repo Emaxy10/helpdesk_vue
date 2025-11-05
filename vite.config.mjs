@@ -75,6 +75,7 @@ export default defineConfig({
     ],
   },
   server: {
+     host: '0.0.0.0', // 👈 this line makes it accessible to other devices/VMs
     port: 3000,
     proxy: {
       '/storage': {

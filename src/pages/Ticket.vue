@@ -100,7 +100,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from '@/plugins/axios'
+import api from '@/plugins/axios'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -111,7 +111,7 @@ const ticket = ref({
 // 🎯 Fetch ticket
 onMounted(async () => {
   try {
-    const response = await axios.get(`/ticket/${route.params.id}`)
+    const response = await api.get(`/ticket/${route.params.id}`)
     ticket.value = response.data
   } catch (error) {
     console.error(error)
