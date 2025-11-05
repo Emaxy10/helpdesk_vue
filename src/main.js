@@ -1,30 +1,37 @@
-/**
- * main.js
- *
- * Bootstraps Vuetify, Pinia and other plugins then mounts the App
- */
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import App from './App.vue'
 
 // Plugins
 import { registerPlugins } from '@/plugins'
-
-// Components
-import App from './App.vue'
-
-// Composables
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+import { useAuthStore } from '@/stores/auth'
 
 // Styles
 import 'unfonts.css'
 
 const app = createApp(App)
 
-// Create Pinia
+// ----------------------
+// Pinia
+// ----------------------
 const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
 app.use(pinia)
 
-// Register other plugins
+// ----------------------
+// Register other plugins (Vuetify already initialized here)
+// ----------------------
 registerPlugins(app)
 
-// Mount App
+// ----------------------
+// Load persisted auth
+// ----------------------
+const authStore = useAuthStore()
+authStore.loadFromLocalStorage()
+
+// ----------------------
+// Mount app
+// ----------------------
 app.mount('#app')
+console.log('App mounted with Pinia ✅')

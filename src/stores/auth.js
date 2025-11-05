@@ -1,60 +1,35 @@
 // stores/auth.js
-import { defineStore } from "pinia"
-import api from "@/plugins/axios"
-import router from "@/router"
+import { defineStore } from 'pinia'
 
-export const useAuthStore = defineStore("auth", {
+export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
-    isLoading: false,
-    error: null,
-    token: localStorage.getItem("token") || null,
+    token: null,
   }),
-  
   getters: {
-    isAuthenticated: (state) => !!state.user,
+    isAuthenticated: (state) => !!state.token,
   },
-  
   actions: {
-    async login(credentials) {
-      
-       try {
-         // 👇 Step 1: Get CSRF cookie first
-        await api.get("/sanctum/csrf-cookie");
-
-        const response = await api.post("/login", credentials);
-
-        this.user = response.data.user;
-        this.token = response.data.token;
-
-        console.log(this.user)
-
-        // Save token to localStorage
-        localStorage.setItem("token", this.token);
-
-        // Set default Authorization header for future requests
-        api.defaults.headers.common["Authorization"] = `Bearer ${this.token}`;
-
-        return true;
-      } catch (error) {
-        console.error("Login failed:", error.response?.data || error);
-        throw error;
+    setUser(user) {
+      this.user = user
+      localStorage.setItem('auth-store', JSON.stringify({ token: this.token, user: this.user }))
+    },
+    setToken(token) {
+      this.token = token
+      localStorage.setItem('auth-store', JSON.stringify({ token: this.token, user: this.user }))
+    },
+    loadFromLocalStorage() {
+      const data = localStorage.getItem('auth-store')
+      if (data) {
+        const parsed = JSON.parse(data)
+        this.user = parsed.user || null
+        this.token = parsed.token || null
       }
-      
-      
     },
-
-    logout() {
-      this.user = null;
-      this.token = null;
-      localStorage.removeItem("token");
-      delete axios.defaults.headers.common["Authorization"];
-    },
-
-    async fetchUser() {
-
-    },
-  },
-  
-  persist: true,
+    clearTokens() {
+      this.token = null
+      this.user = null
+      localStorage.removeItem('auth-store')
+    }
+  }
 })

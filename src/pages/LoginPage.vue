@@ -14,7 +14,7 @@
           <form @submit.prevent="loginUser">
             <!-- Email -->
             <v-text-field
-              v-model="state.email"
+              v-model="credentials.email"
               label="Email Address"
               variant="outlined"
               density="comfortable"
@@ -28,7 +28,7 @@
 
             <!-- Password -->
             <v-text-field
-              v-model="state.password"
+              v-model="credentials.password"
               :type="showPassword ? 'text' : 'password'"
               label="Password"
               variant="outlined"
@@ -45,7 +45,7 @@
 
             <!-- Remember me -->
             <v-checkbox
-              v-model="state.remember"
+              v-model="credentials.remember"
               label="Remember me"
               color="primary"
               hide-details
@@ -87,8 +87,9 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
+const user = ref()
 
-const state = reactive({
+const credentials = reactive({
   email: '',
   password: '',
   remember: false,
@@ -104,7 +105,7 @@ const rules = {
   password: { required },
 }
 
-const v$ = useVuelidate(rules, state)
+const v$ = useVuelidate(rules, credentials)
 
 // login function
 async function loginUser() {
@@ -112,11 +113,15 @@ async function loginUser() {
   if (!success) return
 
   try {
-    const response = await authStore.login(state)  // use Pinia action
-    console.log(response.success)
+     await api.get("/sanctum/csrf-cookie")
+    const response = await api.post("/login", credentials)
+    console.log(response.data)
     
-    if(response.success === false) return    
+    authStore.setToken(response.data.token)
+    authStore.setUser(response.data.user)
+
     router.push('/dashboard')
+    
   } catch (error) {
     console.error('Login error:', error.response?.data || error.message)
   }

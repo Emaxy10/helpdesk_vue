@@ -17,32 +17,28 @@
 
     <!-- Recent Tickets & Chart -->
     <v-row>
+      <!-- Recent Tickets -->
       <v-col cols="12" md="8">
         <v-card>
           <v-card-title class="font-weight-bold">
             Recent Tickets
           </v-card-title>
           <v-divider></v-divider>
+
           <v-data-table
             :headers="ticketHeaders"
             :items="recentTickets"
             class="elevation-1"
+            no-data-text="No recent tickets"
           >
             <template v-slot:item.status="{ item }">
-              <v-chip
-                :color="statusColor(item.status)"
-                variant="flat"
-                size="small"
-              >
+              <v-chip :color="statusColor(item.status)" variant="flat" size="small">
                 {{ item.status }}
               </v-chip>
             </template>
+
             <template v-slot:item.priority="{ item }">
-              <v-chip
-                :color="priorityColor(item.priority)"
-                variant="flat"
-                size="small"
-              >
+              <v-chip :color="priorityColor(item.priority)" variant="flat" size="small">
                 {{ item.priority }}
               </v-chip>
             </template>
@@ -50,7 +46,7 @@
         </v-card>
       </v-col>
 
-      <!-- Priority Bar Chart -->
+      <!-- Priority Chart -->
       <v-col cols="12" md="4">
         <v-card>
           <v-card-title class="font-weight-bold">Priority Distribution</v-card-title>
@@ -68,6 +64,10 @@
 import { ref, onMounted, onUnmounted, nextTick } from "vue"
 import api from "@/plugins/axios"
 import Chart from "chart.js/auto"
+import { useAuthStore } from "@/stores/auth"
+
+const store = useAuthStore()
+
 
 const stats = ref([
   { title: "Open Tickets", value: 0, color: "red", icon: "mdi-alert-circle" },
@@ -88,9 +88,8 @@ const ticketHeaders = [
   { title: "Priority", key: "priority" },
 ]
 
-
 const statusColor = (status) => {
-  switch (status) {
+  switch (status?.toLowerCase()) {
     case "open": return "red"
     case "in-progress": return "blue"
     case "resolved": return "green"
@@ -100,7 +99,7 @@ const statusColor = (status) => {
 }
 
 const priorityColor = (priority) => {
-  switch (priority) {
+  switch (priority?.toLowerCase()) {
     case "high": return "red"
     case "medium": return "orange"
     case "low": return "green"
@@ -108,16 +107,15 @@ const priorityColor = (priority) => {
   }
 }
 
-// Fetch and update dashboard data
 const ticketInfo = async () => {
   try {
-    const response = await api.get("/ticket")
-    tickets.value = response.data
+    const { data } = await api.get("/ticket")
+    tickets.value = Array.isArray(data) ? data : []
 
-    // Compute stats
+    // ✅ Compute accurate stats
     const open = tickets.value.filter(t => t.status === "open").length
     const inProgress = tickets.value.filter(t => t.status === "in-progress").length
-    const resolved = tickets.value.filter(t => t.status === "closed").length
+    const resolved = tickets.value.filter(t => t.status === "resolved").length
     const closed = tickets.value.filter(t => t.status === "closed").length
 
     stats.value = [
@@ -127,17 +125,15 @@ const ticketInfo = async () => {
       { title: "Closed", value: closed, color: "grey", icon: "mdi-close-circle" },
     ]
 
-    // Recent 5 tickets
-    const recent = tickets.value.slice(-5).reverse()
+    // ✅ Show latest 5 tickets
+    recentTickets.value = tickets.value
+      .slice(-5)
+      .reverse()
+      .map((t, i) => ({
+        ...t,
+        ticket_number: `TCK-${String(i + 1).padStart(3, "0")}`,
+      }))
 
-    // Add a dynamic Ticket ID (TCK-001, TCK-002, etc.)
-    recentTickets.value = recent.map((t, index) => ({
-      ...t,
-      ticket_number: `${String(index + 1)}`,
-    }))
-
-
-    // Redraw chart
     await nextTick()
     updatePriorityChart()
   } catch (error) {
@@ -145,7 +141,6 @@ const ticketInfo = async () => {
   }
 }
 
-// Draw or update the chart dynamically
 const updatePriorityChart = () => {
   const ctx = document.getElementById("priorityChart")
   if (!ctx) return
@@ -169,7 +164,6 @@ const updatePriorityChart = () => {
   }
 
   if (chartInstance) {
-    // Update existing chart data instead of recreating it
     chartInstance.data = chartData
     chartInstance.update()
   } else {
@@ -187,13 +181,10 @@ const updatePriorityChart = () => {
 
 onMounted(() => {
   ticketInfo()
-
-  // Refresh data every 30 seconds
   refreshInterval = setInterval(ticketInfo, 30000)
 })
 
 onUnmounted(() => {
-  // Clean up interval when component is destroyed
   if (refreshInterval) clearInterval(refreshInterval)
   if (chartInstance) chartInstance.destroy()
 })
