@@ -65,7 +65,7 @@
         :items="users"
         item-title="name"
         item-value="id"
-        label="Assign to User"
+        label="Assign to Agent"
         prepend-inner-icon="mdi-account"
         :rules="[rules.required]"
       />

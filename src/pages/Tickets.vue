@@ -86,20 +86,24 @@
         </v-tooltip>
 
         <!-- Transfer -->
-        <v-tooltip text="Transfer">
-            <template #activator="{ props }">
-            <v-btn
-                v-bind="props"
-                icon
-                variant="text"
-                color="warning"
-                size="small"
-                @click="transferTicket(item)"
-            >
-                <v-icon>mdi-share</v-icon>
-            </v-btn>
-    </template>
-  </v-tooltip>
+  
+      <v-tooltip text="Transfer">
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            icon
+            variant="text"
+            color="warning"
+            size="small"
+            @click="transferTicket(item)"
+            :disabled="['in-progress', 'completed', 'closed'].includes(item.status?.toLowerCase())"
+            :style="['in-progress', 'completed', 'closed'].includes(item.status?.toLowerCase()) ? 'opacity: 0.5; pointer-events: none;' : ''"
+          >
+            <v-icon>mdi-share</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
+
 
   <!-- Accept -->
   <v-tooltip text="Accept">
@@ -111,6 +115,9 @@
         color="success"
         size="small"
         @click="acceptTicket(item)"
+
+        :disabled="['in-progress', 'completed', 'closed'].includes(item.status?.toLowerCase())"
+        :style="['in-progress', 'completed', 'closed'].includes(item.status?.toLowerCase()) ? 'opacity: 0.5; pointer-events: none;' : ''"
       >
         <v-icon>mdi-check</v-icon>
       </v-btn>
@@ -128,6 +135,9 @@
         color="grey-darken-1"
         size="small"
         @click="closeTicket(item)"
+
+        :disabled="[ 'closed'].includes(item.status?.toLowerCase())"
+        :style="[ 'closed'].includes(item.status?.toLowerCase()) ? 'opacity: 0.5; pointer-events: none;' : ''"
       >
         <v-icon>mdi-close</v-icon>
       </v-btn>
@@ -147,6 +157,8 @@
         color="red-darken-2"
         size="small"
         @click="confirmDelete(item)"
+
+        
       >
         <v-icon>mdi-delete</v-icon>
       </v-btn>
