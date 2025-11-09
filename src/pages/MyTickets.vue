@@ -13,10 +13,18 @@
       dense
     >
       <!-- Agent -->
-      <template v-slot:item.agent="{ item }">
-        <span v-if="item.agent">{{ item.agent.name }}</span>
-        <span v-else class="text-grey">Unassigned</span>
-      </template>
+     <template v-slot:item.agent="{ item }">
+    <span v-if="item.agent">
+      {{ item.agent.name }}
+    </span>
+    <span v-else-if="item.creator">
+      {{ item.creator.name }}
+    </span>
+    <span v-else class="text-grey">
+      Unassigned
+    </span>
+  </template>
+
 
       <!-- Status -->
       <template v-slot:item.status="{ item }">
@@ -30,7 +38,60 @@
       </template>
 
       <!-- Actions -->
-      <template v-slot:item.actions="{ item }">
+    <template v-slot:item.actions="{ item }">
+      <div class="d-flex align-center gap-1">
+        <!-- Only show these buttons if user is an agent -->
+        <template v-if="is_agent">
+          <!-- Accept Button -->
+          <v-tooltip text="Accept Ticket">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon
+                size="small"
+                color="green"
+                @click="acceptTicket(item)"
+                :disabled="item.status?.toLowerCase() !== 'open'"
+              >
+                <v-icon>mdi-check-circle</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+
+          <!-- Close Button -->
+          <v-tooltip text="Close Ticket">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon
+                size="small"
+                color="red"
+                @click="closeTicket(item)"
+                :disabled="['closed', 'resolved'].includes(item.status?.toLowerCase())"
+              >
+                <v-icon>mdi-lock</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+
+          <!-- Transfer Button -->
+          <v-tooltip text="Transfer Ticket">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon
+                size="small"
+                color="blue"
+                @click="transferTicket(item)"
+                :disabled="['closed'].includes(item.status?.toLowerCase())"
+              >
+                <v-icon>mdi-swap-horizontal</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+        </template>
+
+        <!-- Always visible: Comments Button -->
         <v-tooltip text="See & Add Comments">
           <template #activator="{ props }">
             <v-btn
@@ -44,7 +105,9 @@
             </v-btn>
           </template>
         </v-tooltip>
-      </template>
+      </div>
+    </template>
+
     </v-data-table>
 
     <!-- Comments Dialog -->
@@ -122,6 +185,9 @@
 import { ref, onMounted } from 'vue';
 import api from '@/plugins/axios';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth'
+
+const store = useAuthStore()
 
 const tickets = ref([]);
 const showComments = ref(false);
@@ -195,6 +261,28 @@ const postComment = async () => {
     submitting.value = false;
   }
 };
+
+const is_agent = computed(() =>{
+   if (!store.user?.roles) return false
+    return store.user.roles.some(role =>
+      ['agent'].includes(role.name.toLowerCase())
+    )
+})
+
+const acceptTicket = async (ticket) => {
+  console.log("Accept ticket:", ticket.id)
+  // TODO: send API request to accept ticket
+}
+
+const closeTicket = async (ticket) => {
+  console.log("Close ticket:", ticket.id)
+  // TODO: send API request to close ticket
+}
+
+const transferTicket = async (ticket) => {
+  console.log("Transfer ticket:", ticket.id)
+  // TODO: open transfer modal or API call
+}
 
 
 
