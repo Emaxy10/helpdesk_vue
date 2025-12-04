@@ -3,38 +3,22 @@ import axios from "axios"
 import { useAuthStore } from "@/stores/auth"
 
 const api = axios.create({
-  baseURL: "http://localhost/helpdesk/public/api",
-  withCredentials: true,
+  baseURL: "http://helpdesk_server/api",
   headers: {
     "Accept": "application/json",
     "Content-Type": "application/json",
-    "X-Requested-With": "XMLHttpRequest",
   },
-})
+});
 
-// ✅ Helper to get CSRF token from cookie
-function getCookie(name) {
-  const value = `; ${document.cookie}`
-  const parts = value.split(`; ${name}=`)
-  if (parts.length === 2) return parts.pop().split(";").shift()
-}
-
-// ✅ Interceptor: attach both CSRF + latest auth token dynamically
+// Attach token automatically if stored
 api.interceptors.request.use((config) => {
-  // Attach CSRF token
-  const csrfToken = getCookie("XSRF-TOKEN")
-  if (csrfToken) {
-    config.headers["X-XSRF-TOKEN"] = decodeURIComponent(csrfToken)
-  }
-
-  // ✅ Always get latest token from Pinia (handles refresh case)
-  const authStore = useAuthStore()
+  const authStore = useAuthStore();
   if (authStore.token) {
-    config.headers.Authorization = `Bearer ${authStore.token}`
+    config.headers.Authorization = `Bearer ${authStore.token}`;
   }
+  return config;
+});
 
-  return config
-})
 
 
 api.interceptors.response.use(
